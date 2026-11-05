@@ -1,0 +1,5 @@
+emotiefflib==1.1.1
+opencv-python>=4.10,<5
+onnxruntime>=1.20,<2
+fastapi==0.162.0
+uvicorn==0.54.0

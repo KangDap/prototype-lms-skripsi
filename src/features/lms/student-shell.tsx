@@ -18,6 +18,7 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { StudentSidebar } from "./student-sidebar";
 import { StudentBreadcrumbs } from "./student-breadcrumbs";
+import { StudentHeaderActions } from "./student-header-actions";
 
 const StudentLmsContext = createContext<{
   savedIds: string[];
@@ -48,7 +49,10 @@ function StudentHeader() {
         orientation="vertical"
         className="data-vertical:h-4 data-vertical:self-auto md:hidden"
       />
-      <StudentBreadcrumbs />
+      <div className="min-w-0 flex-1">
+        <StudentBreadcrumbs />
+      </div>
+      <StudentHeaderActions />
     </header>
   );
 }

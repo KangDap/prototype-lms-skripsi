@@ -7,8 +7,8 @@ import {
   Bookmark,
   CalendarDays,
   ChevronRight,
-  ChevronsUpDown,
   ClipboardList,
+  EllipsisVertical,
   GraduationCap,
   LayoutDashboard,
   LogOut,
@@ -230,7 +230,7 @@ export function StudentSidebar({ savedCount }: { savedCount: number }) {
                     {student.email}
                   </span>
                 </span>
-                <ChevronsUpDown className="ml-auto group-data-[collapsible=icon]:hidden" />
+                <EllipsisVertical className="ml-auto group-data-[collapsible=icon]:hidden" />
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 className="w-64 max-w-[calc(100vw-2rem)]"

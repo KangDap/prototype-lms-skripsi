@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python FER runtime
+**/.venv/
+**/__pycache__/
+*.pyc
+!.env.example

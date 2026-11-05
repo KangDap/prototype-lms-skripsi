@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { courses } from "@/features/lms/seed-data";
+import { FERProvider } from "@/features/fer/fer-provider";
+import { FERControls } from "@/features/fer/fer-controls";
 
 export function generateStaticParams() {
   return courses.flatMap((course) =>
@@ -54,6 +56,9 @@ export default async function MaterialPage({
           {material.durationMinutes} menit
         </p>
       </header>
+      <FERProvider key={`${courseId}/${materialId}`} courseId={courseId} materialId={materialId}>
+        <FERControls />
+      </FERProvider>
       <article className="flex max-w-3xl flex-col gap-4 border-t pt-7">
         <h2 className="text-lg font-semibold">Pengantar</h2>
         <p className="text-base leading-8">{material.introduction}</p>

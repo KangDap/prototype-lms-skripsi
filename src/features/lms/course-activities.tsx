@@ -109,7 +109,7 @@ export function CourseActivities({
 
         return (
           <section key={meeting.id} aria-labelledby={titleId}>
-            <Collapsible defaultOpen>
+            <Collapsible>
               <Card>
                 <CardHeader className="gap-3">
                   <CardTitle>
