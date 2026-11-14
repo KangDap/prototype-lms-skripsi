@@ -19,7 +19,11 @@ export function StudentBreadcrumbs() {
     pathname.split("/");
   const items = [{ title: "Dashboard", href: "/dashboard" }];
 
-  if (section === "assignments") {
+  if (section === "study" || section === "research") {
+    items.push({ title: section === "study" ? "Sesi penelitian" : "Pengaturan penelitian", href: pathname });
+  } else if (section === "protocol" || section === "pilot-review") {
+    items.push({ title: section === "protocol" ? "Panduan kegiatan" : "Peninjauan bahasa CLT", href: pathname });
+  } else if (section === "assignments") {
     items.push({ title: "Tugas", href: "/assignments" });
     if (courseId) {
       const assignment = assignments.find((item) => item.id === courseId);
@@ -32,6 +36,7 @@ export function StudentBreadcrumbs() {
     items.push({ title: "Kalender", href: "/calendar" });
   } else if (section === "profile") {
     items.push({ title: "Profil", href: "/profile" });
+    if (courseId === "settings") items.push({ title: "Pengaturan", href: "/profile/settings" });
   } else if (section === "saved") {
     items.push({ title: "Tersimpan", href: "/saved" });
   } else if (section === "courses") {

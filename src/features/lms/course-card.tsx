@@ -12,6 +12,8 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { CourseArtwork } from "./course-artwork";
 import { getCourseProgress, type Course } from "./types";
+import { useResearchSession } from "../research/session-provider";
+import { withStudyProgress } from "../research/routing";
 
 export function CourseCard({
   course,
@@ -22,7 +24,8 @@ export function CourseCard({
   saved: boolean;
   onSave: () => void;
 }) {
-  const progress = getCourseProgress(course);
+  const { study } = useResearchSession();
+  const progress = getCourseProgress(withStudyProgress(course, study));
   const href = `/courses/${course.id}`;
 
   return (

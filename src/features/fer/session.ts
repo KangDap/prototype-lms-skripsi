@@ -21,8 +21,23 @@ export class FERSession {
   private video: HTMLVideoElement | null = null;
   private controller: AbortController | null = null;
   private timer: ReturnType<typeof setTimeout> | null = null;
+  private samplingIntervalMs = ferConfig.intervalMs;
+
+  setSamplingInterval(intervalMs: number) {
+    if (!Number.isFinite(intervalMs) || intervalMs < 500) throw new Error("Interval FER tidak valid.");
+    if (intervalMs === this.samplingIntervalMs) return;
+    this.stop();
+    this.samplingIntervalMs = intervalMs;
+  }
 
   constructor(private context: { courseId: string; materialId: string }) {}
+
+  setContext(context: { courseId: string; materialId: string }) {
+    if (this.context.courseId === context.courseId && this.context.materialId === context.materialId) return;
+    this.stop();
+    this.context = context;
+  }
+  getMediaStream() { return this.stream; }
 
   getSnapshot = () => this.snapshot;
   getServerSnapshot = () => initialSnapshot;
@@ -107,6 +122,7 @@ export class FERSession {
         try {
           if (video.readyState < 2 || !video.videoWidth) throw new Error("Frame kamera belum tersedia. Aktifkan kembali kamera.");
           const capturedAt = new Date().toISOString();
+          const capturedAtMonotonicMs = performance.now();
           drawing.drawImage(video, 0, 0, canvas.width, canvas.height);
           const frame = await new Promise<Blob>((resolve, reject) => {
             canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("Frame kamera gagal dibuat.")), "image/jpeg", ferConfig.jpegQuality);
@@ -116,11 +132,11 @@ export class FERSession {
           const prediction = await predictFrame(frame, controller.signal);
           if (!current()) return;
           this.publish({ status: "active", error: null, sample: {
-            ...this.context, sessionId, sequence: ++sequence, capturedAt,
+            ...this.context, sessionId, sequence: ++sequence, capturedAt, capturedAtMonotonicMs,
             receivedAt: new Date().toISOString(), prediction,
           } });
           // Schedule only after completion: no overlapping inference requests.
-          this.timer = setTimeout(() => { void sample(); }, ferConfig.intervalMs);
+          this.timer = setTimeout(() => { void sample(); }, this.samplingIntervalMs);
         } catch (error) {
           if (current()) this.fail(error);
         }

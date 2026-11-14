@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   BookOpen,
   Bookmark,
@@ -12,6 +12,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   LogOut,
+  Settings,
   UserRound,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -52,12 +53,17 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { courses, student } from "./seed-data";
+import { courses } from "./seed-data";
+import { useResearchSession } from "../research/session-provider";
+import { useStudentLms } from "./student-shell";
 
 export type DashboardView = "dashboard" | "courses" | "saved";
 
 export function StudentSidebar({ savedCount }: { savedCount: number }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { leaveSession, study } = useResearchSession();
+  const { adaptiveConfig } = useStudentLms();
   const { state, isMobile, setOpenMobile } = useSidebar();
   const courseActive =
     pathname === "/courses" || pathname.startsWith("/courses/");
@@ -69,7 +75,7 @@ export function StudentSidebar({ savedCount }: { savedCount: number }) {
   const closeMobile = () => setOpenMobile(false);
 
   return (
-    <Sidebar variant="inset" collapsible="icon">
+    <Sidebar variant="inset" collapsible={adaptiveConfig.mode === "DEFAULT" ? "icon" : "offcanvas"}>
       <SidebarHeader className="h-16 flex-row items-center justify-center gap-2 transition-[gap] duration-200 ease-linear group-data-[collapsible=icon]:gap-0">
         <Link
           href="/dashboard"
@@ -167,6 +173,7 @@ export function StudentSidebar({ savedCount }: { savedCount: number }) {
               {[
                 { href: "/assignments", title: "Tugas", icon: ClipboardList },
                 { href: "/calendar", title: "Kalender", icon: CalendarDays },
+                { href: "/protocol", title: "Panduan kegiatan", icon: ClipboardList },
               ].map((item) => {
                 const active =
                   pathname === item.href ||
@@ -222,12 +229,12 @@ export function StudentSidebar({ savedCount }: { savedCount: number }) {
                 }
               >
                 <Avatar>
-                  <AvatarFallback>{student.initials}</AvatarFallback>
+                  <AvatarFallback>{study?.participantId.slice(0, 2) ?? "—"}</AvatarFallback>
                 </Avatar>
                 <span className="flex min-w-0 flex-1 flex-col text-left group-data-[collapsible=icon]:hidden">
-                  <span className="truncate font-medium">{student.name}</span>
+                  <span className="truncate font-medium">{study?.participantId ?? "Belum ada sesi aktif"}</span>
                   <span className="truncate text-xs text-muted-foreground">
-                    {student.email}
+                    {study ? "PC " + study.stationId : "Identitas belum tersedia"}
                   </span>
                 </span>
                 <EllipsisVertical className="ml-auto group-data-[collapsible=icon]:hidden" />
@@ -242,13 +249,13 @@ export function StudentSidebar({ savedCount }: { savedCount: number }) {
                   <DropdownMenuLabel>
                     <span className="flex items-center gap-2 py-1">
                       <Avatar>
-                        <AvatarFallback>{student.initials}</AvatarFallback>
+                        <AvatarFallback>{study?.participantId.slice(0, 2) ?? "—"}</AvatarFallback>
                       </Avatar>
                       <span className="flex min-w-0 flex-col">
                         <span className="truncate text-sm text-foreground">
-                          {student.name}
+                          {study?.participantId ?? "Belum ada sesi aktif"}
                         </span>
-                        <span>{student.email}</span>
+                        <span>{study ? "PC " + study.stationId : "Identitas belum tersedia"}</span>
                       </span>
                     </span>
                   </DropdownMenuLabel>
@@ -263,8 +270,14 @@ export function StudentSidebar({ savedCount }: { savedCount: number }) {
                     Profil
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    render={<Link href="/saved" />}
+                    render={<Link href="/profile/settings" />}
                     onClick={closeMobile}
+                  >
+                    <Settings />
+                    Ruang peneliti
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => { closeMobile(); void leaveSession().then((left) => { if (left) router.push("/"); }); }}
                     variant="destructive"
                   >
                     <LogOut />

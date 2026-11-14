@@ -1,5 +1,5 @@
-﻿import { redirect } from "next/navigation";
+import { ParticipantEntryForm } from "@/features/research/entry-form";
 
 export default function Home() {
-  redirect("/dashboard");
+  return <ParticipantEntryForm />;
 }

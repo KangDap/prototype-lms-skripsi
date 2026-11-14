@@ -23,6 +23,8 @@ import { AssignmentTimeline } from "./assignment-timeline";
 import { assignments, courses, recentActivities, student } from "./seed-data";
 import { useStudentLms } from "./student-shell";
 import type { DashboardView } from "./student-sidebar";
+import { useResearchSession } from "../research/session-provider";
+import { withStudyProgress } from "../research/routing";
 
 export function LmsDashboard({
   view,
@@ -33,19 +35,21 @@ export function LmsDashboard({
 }) {
   const [query, setQuery] = useState("");
   const { savedIds, toggleSaved } = useStudentLms();
+  const { study } = useResearchSession();
+  const availableCourses = courses.map((course) => withStudyProgress(course, study));
   const title =
     view === "dashboard"
       ? "Dashboard"
       : view === "courses"
         ? "Mata kuliah"
         : "Tersimpan";
-  const filteredCourses = courses.filter((course) => {
+  const filteredCourses = availableCourses.filter((course) => {
     const matchesSearch = `${course.title} ${course.code} ${course.lecturer}`
       .toLocaleLowerCase("id")
       .includes(query.trim().toLocaleLowerCase("id"));
     return matchesSearch && (view !== "saved" || savedIds.includes(course.id));
   });
-  const materials = courses.flatMap((course) => course.materials);
+  const materials = availableCourses.flatMap((course) => course.materials);
   const overview = [
     { label: "Mata kuliah", value: courses.length },
     {
@@ -66,7 +70,7 @@ export function LmsDashboard({
         {view === "dashboard" && (
           <p className="text-sm text-muted-foreground">
             Selamat datang,{" "}
-            <span className="font-medium text-foreground">{student.name}</span>
+            <span className="font-medium text-foreground">{study ? "Peserta " + study.participantId : student.name}</span>
           </p>
         )}
       </header>

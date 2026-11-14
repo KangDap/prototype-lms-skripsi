@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { Bell, Moon, Sun } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast";
 import {
   Popover,
   PopoverContent,
@@ -23,9 +24,7 @@ import { formatDeadline } from "./assignment-dates";
 import { assignments, courses } from "./seed-data";
 
 // Sample announcements for the prototype, using the existing assignment data.
-const notificationAssignments = assignments.filter((assignment) =>
-  ["operasi-himpunan", "pemodelan-rdf"].includes(assignment.id),
-);
+const notificationAssignments = assignments.filter((assignment) => !assignment.submittedAt);
 
 function Notifications() {
   const [open, setOpen] = useState(false);
@@ -85,9 +84,10 @@ function Notifications() {
             <Button
               variant="ghost"
               size="xs"
-              onClick={() =>
-                setReadIds(notificationAssignments.map((item) => item.id))
-              }
+              onClick={() => {
+                setReadIds(notificationAssignments.map((item) => item.id));
+                toast.add({ type: "success", title: "Semua notifikasi ditandai dibaca" });
+              }}
             >
               Tandai semua dibaca
             </Button>
@@ -95,6 +95,7 @@ function Notifications() {
         </PopoverHeader>
         <Separator />
         <ul className="flex max-h-[60vh] flex-col overflow-y-auto">
+          {notificationAssignments.length === 0 && <li className="p-4 text-sm text-muted-foreground">Belum ada notifikasi.</li>}
           {notificationAssignments.map((assignment, index) => {
             const course = courses.find(
               (item) => item.id === assignment.courseId,
@@ -145,9 +146,11 @@ function ThemeToggle() {
             variant="ghost"
             size="icon"
             aria-label="Ubah tema"
-            onClick={() =>
-              setTheme(resolvedTheme === "dark" ? "light" : "dark")
-            }
+            onClick={() => {
+              const next = resolvedTheme === "dark" ? "light" : "dark";
+              setTheme(next);
+              toast.add({ id: "theme-status", type: "success", title: next === "dark" ? "Tema gelap diaktifkan" : "Tema terang diaktifkan" });
+            }}
           />
         }
       >
@@ -162,11 +165,11 @@ function ThemeToggle() {
   );
 }
 
-export function StudentHeaderActions() {
+export function StudentHeaderActions({ showSecondaryWidgets = true }: { showSecondaryWidgets?: boolean }) {
   return (
     <div className="ml-auto flex shrink-0 items-center gap-2">
       <ThemeToggle />
-      <Notifications />
+      <div hidden={!showSecondaryWidgets}><Notifications /></div>
     </div>
   );
 }

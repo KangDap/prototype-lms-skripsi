@@ -3,11 +3,11 @@ import { notFound } from "next/navigation";
 import { cn } from "cn";
 import { ArrowLeft } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { assignments, courses } from "@/features/lms/seed-data";
 import { CourseActivities } from "@/features/lms/course-activities";
 import { CourseArtwork } from "@/features/lms/course-artwork";
-import { getCourseProgress } from "@/features/lms/types";
+import { CourseMaterials } from "@/features/lms/course-materials";
+import { StudyCourseProgress } from "@/features/lms/course-progress";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +33,6 @@ export default async function CoursePage({
   const { courseId } = await params;
   const course = courses.find((item) => item.id === courseId);
   if (!course) notFound();
-  const progress = getCourseProgress(course);
 
   return (
     <>
@@ -61,29 +60,18 @@ export default async function CoursePage({
             </p>
             <p className="text-sm">{course.lecturer}</p>
           </div>
-          <div className="flex max-w-xl flex-col gap-2">
-            <div className="flex justify-between gap-3 text-xs text-muted-foreground">
-              <span>
-                {progress.completed} dari {progress.total} materi selesai
-              </span>
-              <span>{progress.percentage}%</span>
-            </div>
-            <Progress
-              value={progress.percentage}
-              aria-label={`Progres ${course.title}`}
-            />
-          </div>
+          <StudyCourseProgress course={course} />
         </div>
         <div className="overflow-hidden rounded-xl border">
           <CourseArtwork variant={course.artwork} />
         </div>
       </header>
-      <CourseActivities
+      {course.meetings.length === 0 ? <CourseMaterials course={course} /> : <CourseActivities
         key={course.id}
         course={course}
         assignments={assignments}
         now={new Date().toISOString()}
-      />
+      />}
     </>
   );
 }

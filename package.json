@@ -6,7 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node scripts/test-aui.cjs && node scripts/test-fer.cjs && node scripts/test-clt.cjs",
+    "test:aui": "node scripts/test-aui.cjs",
+    "test:clt": "node scripts/test-clt.cjs",
+    "typecheck": "tsc --noEmit",
+    "lab:setup": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-lab.ps1",
+    "lab": "node scripts/run-lab.cjs",
+    "lab:dev": "node scripts/run-lab.cjs --dev"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

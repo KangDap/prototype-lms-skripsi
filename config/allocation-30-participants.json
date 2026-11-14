@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "version": "allocation-30-participants-v2",
+  "kind": "PILOT",
+  "profileId": "PILOT_D",
+  "profileApprovedForMain": false,
+  "stations": [
+    "PC1",
+    "PC2",
+    "PC3",
+    "PC4",
+    "PC5"
+  ],
+  "participants": [
+    {
+      "participantId": "P01",
+      "sequence": 1,
+      "enabled": true
+    },
+    {
+      "participantId": "P02",
+      "sequence": 2,
+      "enabled": true
+    },
+    {
+      "participantId": "P03",
+      "sequence": 3,
+      "enabled": true
+    },
+    {
+      "participantId": "P04",
+      "sequence": 4,
+      "enabled": true
+    },
+    {
+      "participantId": "P05",
+      "sequence": 1,
+      "enabled": true
+    },
+    {
+      "participantId": "P06",
+      "sequence": 2,
+      "enabled": true
+    },
+    {
+      "participantId": "P07",
+      "sequence": 3,
+      "enabled": true
+    },
+    {
+      "participantId": "P08",
+      "sequence": 4,
+      "enabled": true
+    },
+    {
+      "participantId": "P09",
+      "sequence": 1,
+      "enabled": true
+    },
+    {
+      "participantId": "P10",
+      "sequence": 2,
+      "enabled": true
+    },
+    {
+      "participantId": "P11",
+      "sequence": 3,
+      "enabled": true
+    },
+    {
+      "participantId": "P12",
+      "sequence": 4,
+      "enabled": true
+    },
+    {
+      "participantId": "P13",
+      "sequence": 1,
+      "enabled": true
+    },
+    {
+      "participantId": "P14",
+      "sequence": 2,
+      "enabled": true
+    },
+    {
+      "participantId": "P15",
+      "sequence": 3,
+      "enabled": true
+    },
+    {
+      "participantId": "P16",
+      "sequence": 4,
+      "enabled": true
+    },
+    {
+      "participantId": "P17",
+      "sequence": 1,
+      "enabled": true
+    },
+    {
+      "participantId": "P18",
+      "sequence": 2,
+      "enabled": true
+    },
+    {
+      "participantId": "P19",
+      "sequence": 3,
+      "enabled": true
+    },
+    {
+      "participantId": "P20",
+      "sequence": 4,
+      "enabled": true
+    },
+    {
+      "participantId": "P21",
+      "sequence": 1,
+      "enabled": true
+    },
+    {
+      "participantId": "P22",
+      "sequence": 2,
+      "enabled": true
+    },
+    {
+      "participantId": "P23",
+      "sequence": 3,
+      "enabled": true
+    },
+    {
+      "participantId": "P24",
+      "sequence": 4,
+      "enabled": true
+    },
+    {
+      "participantId": "P25",
+      "sequence": 1,
+      "enabled": true
+    },
+    {
+      "participantId": "P26",
+      "sequence": 2,
+      "enabled": true
+    },
+    {
+      "participantId": "P27",
+      "sequence": 3,
+      "enabled": true
+    },
+    {
+      "participantId": "P28",
+      "sequence": 4,
+      "enabled": true
+    },
+    {
+      "participantId": "P29",
+      "sequence": 1,
+      "enabled": true
+    },
+    {
+      "participantId": "P30",
+      "sequence": 4,
+      "enabled": true
+    }
+  ]
+}

@@ -38,13 +38,14 @@ export type FERPrediction = PredictionMetadata & (
     }
 );
 
-// Integration boundary for the future in-memory emotion aggregator.
+// Browser monotonic capture time shares performance.now() with the AUI clock.
 export type FERSample = {
   sessionId: string;
   courseId: string;
   materialId: string;
   sequence: number;
   capturedAt: string;
+  capturedAtMonotonicMs: number;
   receivedAt: string;
   prediction: FERPrediction;
 };

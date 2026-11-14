@@ -63,6 +63,34 @@ test("response contract accepts probabilities and keeps no_face separate from Ne
   }
 });
 
+test("session snapshot interval overrides environment and changing it stops the old stream", async () => {
+  const cam = camera();
+  const session = setup(async () => cam.stream);
+  const originalTimeout = global.setTimeout;
+  const scheduled = [];
+  global.setTimeout = (callback, delay, ...args) => {
+    scheduled.push(delay);
+    return originalTimeout(callback, delay, ...args);
+  };
+  try {
+    // Test environment uses 500ms; PILOT_C session must schedule 1000ms.
+    session.setSamplingInterval(1000);
+    await session.start(cam.video);
+    await tick();
+    assert.ok(scheduled.includes(1000));
+    assert.equal(scheduled.includes(500), false);
+    assert.throws(() => session.setSamplingInterval(NaN));
+    assert.throws(() => session.setSamplingInterval(499));
+    session.setSamplingInterval(1000);
+    assert.equal(session.getSnapshot().status, "active");
+    session.setSamplingInterval(1500);
+    assert.equal(session.getSnapshot().status, "inactive");
+    assert.ok(cam.stopped() > 0);
+  } finally {
+    global.setTimeout = originalTimeout;
+  }
+});
+
 test("late camera permission after stop releases tracks without starting inference", async () => {
   const permission = deferred();
   const cam = camera();

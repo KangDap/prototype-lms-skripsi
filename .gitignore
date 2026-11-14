@@ -45,3 +45,9 @@ next-env.d.ts
 **/__pycache__/
 *.pyc
 !.env.example
+
+# Local research records, answers, and event journals (never served from public)
+/.research-data/
+/services/fer/models/*.onnx
+/services/fer/models/*.sha256
+/config/*.tmp

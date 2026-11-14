@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useFERPrediction } from "./fer-provider";
 
 const statusLabels = { inactive: "Nonaktif", starting: "Menghubungkan", active: "Aktif", error: "Error" };
 
-export function FERControls() {
+export function FERControls({ disabled = false, allowDebug = false }: { disabled?: boolean; allowDebug?: boolean }) {
   const { status, sample, error, start, stop } = useFERPrediction();
   const [debugVisible, setDebugVisible] = useState(false);
+  const [now, setNow] = useState(0);
+  useEffect(() => { const timer = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, []);
   const running = status === "active" || status === "starting";
   const prediction = sample?.prediction;
 
@@ -16,19 +18,20 @@ export function FERControls() {
     <section aria-label="Pengenalan ekspresi wajah" className="flex max-w-3xl flex-col gap-3 rounded-xl border p-4">
       <div className="flex flex-wrap items-center gap-3">
         <span className="flex-1 text-sm font-medium" role="status">FER: {statusLabels[status]}</span>
-        <Button type="button" variant={running ? "outline" : "default"} onClick={running ? stop : start}>
+        <Button type="button" disabled={disabled} variant={running ? "outline" : "default"} onClick={running ? stop : start}>
           {status === "starting" ? "Batalkan" : running ? "Hentikan FER" : "Aktifkan FER"}
         </Button>
-        <Button type="button" variant="ghost" aria-expanded={debugVisible} aria-controls="fer-debug" onClick={() => setDebugVisible((visible) => !visible)}>
+        {allowDebug && process.env.NODE_ENV === "development" && <Button type="button" variant="ghost" aria-expanded={debugVisible} aria-controls="fer-debug" onClick={() => setDebugVisible((visible) => !visible)}>
           {debugVisible ? "Sembunyikan debug" : "Tampilkan debug"}
-        </Button>
+        </Button>}
       </div>
+      <p role="status" aria-live="polite" className="text-sm">{status === "error" ? "Kamera atau layanan tidak tersedia." : status !== "active" ? "Kamera belum aktif." : !sample || now - Date.parse(sample.receivedAt) > 5000 ? "Menunggu pembaruan posisi wajah…" : !prediction?.face_detected ? "Wajah belum terlihat. Sesuaikan posisi Anda." : prediction.face_count > 1 ? "Lebih dari satu wajah terlihat. Pastikan hanya peserta berada dalam bingkai." : "Wajah berada dalam bingkai."}</p>
       <p className="text-xs leading-5 text-muted-foreground">
         Dengan mengaktifkan FER, Anda mengizinkan frame kamera dikirim ke service FER lokal untuk analisis ekspresi wajah.
         Frame tidak disimpan. Kamera berhenti saat FER dinonaktifkan, tab disembunyikan, atau Anda meninggalkan materi.
       </p>
       {error && <p role="alert" className="text-sm text-destructive">{error} Materi tetap dapat digunakan.</p>}
-      {debugVisible && (
+      {allowDebug && process.env.NODE_ENV === "development" && debugVisible && (
         <div id="fer-debug" className="border-t pt-3 text-sm">
           <dl className="grid grid-cols-[auto_1fr] gap-x-5 gap-y-2 tabular-nums">
             <dt>FER Status</dt><dd>{statusLabels[status]}</dd>
