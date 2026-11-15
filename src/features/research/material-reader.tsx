@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, BookOpen, List, PanelRightOpen } from "lucide-react";
+import { BookOpen, PanelRightOpen } from "lucide-react";
 import { cn } from "cn";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationPrevious, PaginationNext } from "@/components/ui/pagination";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import type { AdaptiveUIMode } from "../aui/types";
@@ -23,7 +23,6 @@ export function MaterialReader({ material, mode = "DEFAULT", assisted = false, r
   const [active, setActive] = useState("material-introduction");
   const [visited, setVisited] = useState<string[]>([]);
   const [manualHelp, setManualHelp] = useState(false);
-  const [outlineOpen, setOutlineOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const definition = useRef(material); definition.current = material;
   const current = useRef({ active, visited }); current.current = { active, visited };
@@ -36,6 +35,7 @@ export function MaterialReader({ material, mode = "DEFAULT", assisted = false, r
   const index = Math.max(0, ids.indexOf(active));
   const section = material.sections.find((item) => item.id === active);
   const helpVisible = presentation === "ASSISTED" || manualHelp;
+  const centeredReading = presentation === "FOCUS" && !helpVisible;
   const emit = useCallback((type: string, target: string, details: Record<string, unknown> = {}) => {
     interaction.current?.(type, target, { ...details, materialId: material.id });
   }, [material.id]);
@@ -46,7 +46,7 @@ export function MaterialReader({ material, mode = "DEFAULT", assisted = false, r
     setVisited((previous) => previous.includes(id) ? previous : [...previous, id]);
   }, [emit]);
   function navigate(id: string) {
-    queuedNavigation.current = id; selectSection(id, "NAVIGATION"); setOutlineOpen(false);
+    queuedNavigation.current = id; selectSection(id, "NAVIGATION");
     emit("OUTLINE_OPENED", id);
     // Runs even when the user selects the already active section.
     requestAnimationFrame(() => {
@@ -88,12 +88,13 @@ export function MaterialReader({ material, mode = "DEFAULT", assisted = false, r
       if (queuedNavigation.current) return;
       const help = root.current?.querySelector<HTMLElement>("[data-contextual-panel]");
       const helpRect = help?.getBoundingClientRect();
-      const railIsBelow = window.innerWidth < (presentation === "DEFAULT" ? 1024 : 1280);
+      const railIsBelow = window.innerWidth < 1024;
       if (helpRect && helpRect.height && helpRect.top <= 150 && helpRect.bottom > 150 && railIsBelow) return;
       const sections = [...(root.current?.querySelectorAll<HTMLElement>("[data-reader-section]") ?? [])]
         .map((element) => ({ element, rect: element.getBoundingClientRect() }))
         .filter(({ rect }) => rect.height > 0);
-      const visible = sections.find(({ rect }) => rect.top <= 150 && rect.bottom > 150)
+      const readingLine = 150;
+      const visible = sections.find(({ rect }) => rect.top <= readingLine && rect.bottom > readingLine)
         ?? sections.find(({ rect }) => rect.top > 0 && rect.top < window.innerHeight * 0.6);
       if (visible) selectSection(visible.element.dataset.readerSection!, "SCROLL");
     };
@@ -130,35 +131,21 @@ export function MaterialReader({ material, mode = "DEFAULT", assisted = false, r
     requestAnimationFrame(() => {
       const panel = root.current?.querySelector<HTMLElement>("[data-contextual-panel]");
       panel?.focus({ preventScroll: true });
-      const wide = window.matchMedia(presentation === "DEFAULT" ? "(min-width: 1024px)" : "(min-width: 1280px)").matches;
+      const wide = window.matchMedia("(min-width: 1024px)").matches;
       if (wide) { const rail = panel?.parentElement; if (rail && panel) rail.scrollTop = panel.offsetTop - rail.offsetTop; }
       else panel?.scrollIntoView({ block: "start", behavior: "instant" });
     });
   }
   const headingProps = (id: string) => ({ id: `${material.id}-${id}-heading`, tabIndex: -1, "data-reading-anchor": true });
-  return <ReadingPositionBoundary layout={`${presentation}:${helpVisible}:${outlineOpen}`}>
-    <div ref={root} className="flex min-w-0 flex-col gap-5" data-reading-mode={presentation}>
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-muted/20 p-4">
-        <div className="flex min-w-0 flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-2"><Badge variant="secondary">{presentation === "DEFAULT" ? "Tampilan standar" : presentation === "FOCUS" ? "Baca fokus" : "Bantuan belajar"}</Badge><span className="text-xs text-muted-foreground">{index ? `Bagian ${index} dari ${material.sections.length}` : "Pengantar"}</span></div>
-          <p className="text-sm font-medium">{section?.title ?? "Pengantar dan tujuan pembelajaran"}</p>
-          <p className="text-xs text-muted-foreground">{visited.filter((id) => id !== "material-introduction").length} dari {material.sections.length} subbab pernah dibuka</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {focused && <Button type="button" size="sm" variant="outline" aria-expanded={outlineOpen} onClick={() => setOutlineOpen(!outlineOpen)}><List data-icon="inline-start" />Daftar bagian</Button>}
-          <Button data-help-trigger type="button" size="sm" variant="outline" onClick={openHelp}><PanelRightOpen data-icon="inline-start" />{helpVisible ? "Lihat bantuan" : "Bantuan bagian ini"}</Button>
-        </div>
-      </div>
-      {focused && outlineOpen && <div className="rounded-xl border bg-card p-5">
-        <h3 className="mb-3 font-medium">Daftar bagian</h3>
-        <nav aria-label="Daftar bagian pada tampilan fokus" className="flex flex-wrap gap-2">{ids.map((id, i) => <Button key={id} type="button" variant={active === id ? "secondary" : "outline"} className="h-auto whitespace-normal text-left" aria-current={active === id ? "location" : undefined} onClick={() => navigate(id)}>{i ? material.sections[i - 1].title : "Pengantar"}</Button>)}</nav>
-        <details className="mt-4" onToggle={(event) => { if (event.currentTarget.open) emit("GLOSSARY_EXPANDED", material.id); }}><summary className="cursor-pointer text-sm font-medium">Glosarium lengkap</summary><dl className="mt-4 flex flex-col gap-3 text-sm">{material.glossary.map((item) => <div key={item.term}><dt className="font-medium">{item.term}</dt><dd className="leading-6 text-muted-foreground">{item.definition}</dd></div>)}</dl></details>
-      </div>}
-      <div className={cn("grid min-w-0 items-start gap-6", presentation === "DEFAULT" && "lg:grid-cols-[minmax(0,1fr)_18rem]", focused && helpVisible && "xl:grid-cols-[minmax(0,1fr)_21rem]")}>
-        <article aria-label={material.title} className={cn("min-w-0 rounded-xl border bg-card p-5 sm:p-8", focused && "mx-auto w-full max-w-[76ch]")}>
+  const helpButton = <Button data-help-trigger type="button" size="sm" variant="outline" aria-expanded={helpVisible} aria-controls={`${material.id}-contextual-help`} onClick={openHelp}><PanelRightOpen data-icon="inline-start" />Lihat bantuan</Button>;
+  return <ReadingPositionBoundary layout={`${presentation}:${helpVisible}`}>
+    <div ref={root} className="mx-auto flex w-full max-w-[1280px] min-w-0 flex-col gap-5 lg:w-[min(100%,calc(100vw-21rem))]" data-reading-mode={presentation}>
+      <div className={cn("grid min-w-0 items-start gap-6", !centeredReading && "lg:grid-cols-[minmax(0,1fr)_18rem]")}>
+        <article aria-label={material.title} className={cn("w-full min-w-0 rounded-xl border bg-card p-5 sm:p-8", centeredReading && "mx-auto lg:w-[calc(100%_-_19.5rem)]")}>
+          {centeredReading && <div className="mb-5 flex justify-end">{helpButton}</div>}
           <section data-reader-section="material-introduction" data-reader-active={active === "material-introduction"} hidden={focused && active !== "material-introduction"} className="flex flex-col gap-5">
             <h2 {...headingProps("material-introduction")} className="scroll-mt-28 text-2xl font-semibold tracking-tight">Pengantar</h2>
-            <p id={`${material.id}-intro-text`} data-reading-anchor className="text-base leading-8">{material.introduction}</p>
+            <p id={`${material.id}-intro-text`} data-reading-anchor className="text-justify text-base leading-8">{material.introduction}</p>
             <ul className="flex list-disc flex-col gap-2 pl-6 leading-7">{material.objectives.map((item) => <li key={item}>{item}</li>)}</ul>
             <p className="text-sm leading-6 text-muted-foreground">Perkiraan belajar 15–20 menit, termasuk membaca diagram dan memikirkan pertanyaan refleksi. Pertanyaan refleksi tidak perlu dikirim.</p>
           </section>
@@ -166,16 +153,26 @@ export function MaterialReader({ material, mode = "DEFAULT", assisted = false, r
             <h2 {...headingProps(item.id)} className="scroll-mt-28 text-2xl font-semibold tracking-tight leading-snug">{item.title}</h2>
             <p className="text-xs text-muted-foreground">Perkiraan {item.minutes} menit</p>
             <LessonSectionBody material={material} section={item} onTermOpen={(term) => emit("TOOLTIP_OPENED", item.id, { term })} />
-            <aside id={`${material.id}-${item.id}-reflection`} data-reading-anchor className="flex flex-col gap-2 rounded-xl border bg-muted/30 p-5"><h3 className="text-sm font-semibold">Pikirkan sejenak</h3><p className="text-sm leading-7">{item.reflection}</p></aside>
+            <aside id={`${material.id}-${item.id}-reflection`} data-reading-anchor className="flex flex-col gap-2 rounded-xl border bg-muted/30 p-5"><h3 className="text-sm font-semibold">Pikirkan sejenak</h3><p className="text-justify text-sm leading-7">{item.reflection}</p></aside>
           </section>)}
-          <Separator className="my-6" />
-          <nav aria-label="Navigasi bagian materi" className="flex items-center justify-between gap-3">
-            <Button type="button" variant="outline" disabled={index === 0} onClick={() => navigate(ids[index - 1])}><ArrowLeft data-icon="inline-start" />Sebelumnya</Button>
-            <span className="text-xs text-muted-foreground">{index ? `${index} / ${material.sections.length}` : "Pengantar"}</span>
-            <Button type="button" variant="outline" disabled={index === ids.length - 1} onClick={() => navigate(ids[index + 1])}>Berikutnya<ArrowRight data-icon="inline-end" /></Button>
-          </nav>
+          {focused && <>
+            <Separator className="my-6" />
+            <Pagination aria-label="Navigasi subbab materi">
+              <PaginationContent>
+                <PaginationItem><PaginationPrevious text="Sebelumnya" render={<button type="button" />} nativeButton disabled={index === 0} onClick={() => navigate(ids[index - 1])} /></PaginationItem>
+                <PaginationItem><PaginationLink render={<button type="button" />} nativeButton size="sm" isActive={index === 0} aria-label="Pengantar" onClick={() => navigate(ids[0])}>Pengantar</PaginationLink></PaginationItem>
+                {material.sections.map((item, sectionIndex) => <PaginationItem key={item.id}>
+                  <PaginationLink render={<button type="button" />} nativeButton isActive={active === item.id} aria-label={`Bagian ${sectionIndex + 1}: ${item.title}`} onClick={() => navigate(item.id)}>{sectionIndex + 1}</PaginationLink>
+                </PaginationItem>)}
+                <PaginationItem><PaginationNext text="Berikutnya" render={<button type="button" />} nativeButton disabled={index === ids.length - 1} onClick={() => navigate(ids[index + 1])} /></PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </>}
         </article>
-        <aside hidden={focused && !helpVisible} aria-label="Navigasi dan bantuan materi" className={cn("flex min-w-0 flex-col gap-5", presentation === "DEFAULT" ? "lg:sticky lg:top-28 lg:col-start-2 lg:row-start-1 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto" : "xl:sticky xl:top-28 xl:col-start-2 xl:row-start-1 xl:max-h-[calc(100dvh-8rem)] xl:overflow-y-auto")}>
+        <aside hidden={centeredReading} aria-label="Navigasi dan bantuan materi" className="flex min-w-0 flex-col gap-5 lg:sticky lg:top-28 lg:col-start-2 lg:row-start-1 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto">
+          <div className="sticky top-0 z-10 flex bg-background py-1">
+            {!centeredReading && helpButton}
+          </div>
           <div hidden={focused}>
           <Card>
             <CardHeader><CardTitle>Daftar bagian</CardTitle><CardDescription>Seluruh subbab dan istilah selalu tersedia.</CardDescription></CardHeader>
@@ -185,7 +182,7 @@ export function MaterialReader({ material, mode = "DEFAULT", assisted = false, r
             </CardContent>
           </Card>
           </div>
-          <div data-contextual-panel tabIndex={-1} hidden={!helpVisible} aria-label="Panel bantuan kontekstual" className="scroll-mt-28">
+          <div id={`${material.id}-contextual-help`} data-contextual-panel tabIndex={-1} hidden={!helpVisible} aria-label="Panel bantuan kontekstual" className="scroll-mt-28">
             <ContextualHelp material={material} section={section} onClose={closeHelp} onInteraction={emit} />
           </div>
         </aside>

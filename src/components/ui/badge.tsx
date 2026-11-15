@@ -9,6 +9,9 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
+        success: "border-status-success/25 bg-status-success/10 text-status-success",
+        info: "border-status-info/25 bg-status-info/10 text-status-info",
+        pending: "border-status-pending/25 bg-status-pending/10 text-status-pending",
         secondary:
           "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
         destructive:

@@ -189,10 +189,10 @@ export function CourseActivities({
                                 <Badge
                                   variant={
                                     activity.completed
-                                      ? "secondary"
+                                      ? "success"
                                       : activity.overdue
                                         ? "destructive"
-                                        : "outline"
+                                        : "pending"
                                   }
                                 >
                                   {activity.status}

@@ -12,8 +12,8 @@ export function LessonSectionBody({ material, section, onTermOpen }: {
   const prefix = `${material.id}-${section.id}`;
   return <>
     {section.paragraphs.map((paragraph, paragraphIndex) => <Fragment key={paragraphIndex}>
-      <p id={`${prefix}-paragraph-${paragraphIndex}`} data-reading-anchor className="text-base leading-8">
-        <LearningTerms text={paragraph} glossary={material.glossary} onOpen={onTermOpen} />
+      <p id={`${prefix}-paragraph-${paragraphIndex}`} data-reading-anchor className="text-justify text-base leading-8">
+        <LearningTerms text={paragraph} precedingText={section.paragraphs.slice(0, paragraphIndex).join("\n")} glossary={material.glossary} onOpen={onTermOpen} />
       </p>
       {section.tables?.filter((table) => table.afterParagraph === paragraphIndex).map((table) => <div key={table.id} id={`${prefix}-table-${table.id}`} data-reading-anchor className="min-w-0 overflow-x-auto rounded-lg border">
         <table className="w-full text-left text-sm leading-6">

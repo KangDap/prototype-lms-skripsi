@@ -14,6 +14,10 @@
 
 @theme inline {
   --color-background: var(--background);
+  --color-learning-term: var(--learning-term);
+  --color-status-success: var(--status-success);
+  --color-status-info: var(--status-info);
+  --color-status-pending: var(--status-pending);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -57,6 +61,10 @@
 }
 
 :root {
+  --learning-term: #786038;
+  --status-success: #187344;
+  --status-info: #285faf;
+  --status-pending: #805e22;
   --background: #ffffff;
   --foreground: #202124;
   --card: #ffffff;
@@ -97,6 +105,10 @@
 }
 
 .dark {
+  --learning-term: #c4b08c;
+  --status-success: #83d6a5;
+  --status-info: #9abff7;
+  --status-pending: #dfc38c;
   --background: #18191b;
   --foreground: #f4f4f5;
   --card: #222326;

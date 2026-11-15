@@ -1,6 +1,6 @@
 import type { StudyBlock, MaterialId } from "./types";
 
-export const APP_VERSION = "research-2026-11-14-v8";
+export const APP_VERSION = "research-2026-11-15-v11";
 export const MATERIAL_VERSION = "statistics-id-draft-4";
 export const ASSESSMENT_VERSION = "statistics-tests-draft-2";
 // Review with the supervisor after pilot; changing to APPROVED requires an explicit version bump.
